@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dashboard - Prakash Netra</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    text-align: center;
+    width: 100%;
+    max-width: 520px;
+    transition: all 0.3s ease;
+  }
+  .container:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.2); }
+  h1 { font-size: 26px; color: #1a202c; margin-bottom: 8px; }
+  p { font-size: 15px; color: #4a5568; margin: 6px 0; }
+  .user-card { display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom: 18px; }
+  .user-photo { width:88px; height:88px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; display:block; }
+  .user-info { font-size: 18px; color: #2d3748; font-weight:600; }
+  .user-email { font-size:14px; color:#4a5568; }
+  button { padding: 12px 22px; border: none; border-radius: 8px;
+           background: linear-gradient(135deg,#4299e1,#3182ce); color: white;
+           font-size: 15px; font-weight:600; cursor:pointer; }
+  button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(49,130,206,0.25); }
+</style>
+</head>
+<body>
+  <div class="container" id="app">
+    <h1>Welcome to Prakash Netra Admin Dashboard</h1>
+
+    <div class="user-card">
+      <img id="userPhoto" src="" alt="Profile photo" class="user-photo" style="display:none;">
+      <div id="userName" class="user-info">Hello!</div>
+      <div id="userEmail" class="user-email"></div>
+    </div>
+
+    <p id="statusText">You are logged in successfully!</p>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+<script>
+  (function() {
+    // Must be logged in
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      alert("Please login first.");
+      window.location.href = "login1.html";
+      return;
+    }
+
+    // Prefer the logged-in email (set at login)
+    const loggedEmail = localStorage.getItem("loggedInUser") || "";
+
+    // Try to load users list safely
+    let users = [];
+    try {
+      users = JSON.parse(localStorage.getItem("users")) || [];
+      if (!Array.isArray(users)) users = [];
+    } catch (e) {
+      users = [];
+    }
+
+    // Find user by email from users array
+    let user = null;
+    if (loggedEmail) {
+      user = users.find(u => (u.email || "").toLowerCase() === loggedEmail.toLowerCase());
+    }
+
+    // Fallback — if no user found, try legacy single userDetails object
+    if (!user) {
+      try {
+        const legacy = JSON.parse(localStorage.getItem("userDetails"));
+        if (legacy && (legacy.email || legacy.firstName || legacy.lastName)) {
+          user = legacy;
+        }
+      } catch(e) {
+        // ignore parse errors
+      }
+    }
+
+    // Populate UI
+    const nameEl = document.getElementById("userName");
+    const emailEl = document.getElementById("userEmail");
+    const photoEl = document.getElementById("userPhoto");
+
+    if (user) {
+      const first = user.firstName || user.first || "";
+      const last = user.lastName || user.last || "";
+      const displayName = (first || last) ? (first + " " + last).trim() : (user.email || "User");
+      nameEl.textContent = `Hello, ${displayName}!`;
+      emailEl.textContent = user.email ? `Email: ${user.email}` : "";
+      if (user.photo) {
+        photoEl.src = user.photo;
+        photoEl.style.display = "block";
+      } else {
+        photoEl.style.display = "none";
+      }
+    } else {
+      nameEl.textContent = "Hello!";
+      emailEl.textContent = loggedEmail ? `Email: ${loggedEmail}` : "";
+      photoEl.style.display = "none";
+    }
+
+    // Logout handler
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("loggedInUser");
+      alert("Logged out successfully.");
+      window.location.href = "login1.html";
+    });
+  })();
+</script>
+</body>
+</html>
